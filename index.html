@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title> Simple snake game</title>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            border: 1px solid white;
+            background: #ADFF2F;
+        }
+    </style>
+</head>
+
+<body
+    background="https://previews.123rf.com/images/alexmstudio/alexmstudio1508/alexmstudio150800012/43889983-cartoon-game-background.jpg">
+    <audio id="myAudio">
+        <source src="soundtrack.mp3" type="audio/mpeg">
+    </audio>
+    <div>
+
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    <d1 id="diem">0</d1>
+                    <img src="https://www.google.com/logos/fnbx/snake_arcade/apple.png" , width="40" height="40">
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <d1 id="diemcao">0</d1>
+                    <img src="https://www.google.com/logos/fnbx/snake_arcade/trophy.png" , width="40" height="40">
+                </td>
+            </tr>
+            <tr>
+                <td><img src="volume_off_white_24dp.png" id="music" onclick="turnOnMucsic()"> </td>
+            </tr>
+        </tbody>
+    </table>
+    <canvas width="400" height="400" id="game"></canvas>
+    <script>
+        let diem = 0;
+        let diemcao = 0;
+        let canvas = document.getElementById('game');
+        let context = canvas.getContext('2d');
+        const distance = 16;
+        // Tạo 2 đối tượng rắn và quả táo
+        class snake {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.left = distance;
+                this.top = 0;
+                this.cells = [];
+                this.minCells = 4;
+            }
+        }
+
+        class apple {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+        }
+
+        let Snake = new snake(160, 160);
+        let Apple = new apple(160, 160);
+        // Random sinh táo
+
+        function getRandomInt(minof_x, maxof_x) {
+            return Math.floor(Math.random() * (maxof_x - minof_x)) + minof_x;
+        }
+        let isTurnon = true;
+        function turnOnMucsic() {
+            if (isTurnon) {
+                isTurnon = false;
+                document.getElementById("myAudio").play();
+                document.getElementById("music").src = "volume_up_white_24dp.png";
+            }
+            else {
+                isTurnon = true;
+                document.getElementById("myAudio").pause();
+                document.getElementById("music").src = "volume_off_white_24dp.png";
+            }
+        }
+        var count = 0;
+        /* Tạo ra rắn, di chuyển, tăng kích thước, đưa về kích thước ban đầu khi va vào bản thân, xuất hiện ở đầu kia khi đụng vào khung canvas,
+        tăng điểm khi ăn được táo nếu điểm cao hơn lần cao nhất trước đó thì thay đổi giá trị điểm cao*/
+        function loop() {
+            requestAnimationFrame(loop);
+            if (++count < 4) {
+                return;
+            }
+            count = 0;
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            Snake.x += Snake.left;
+            Snake.y += Snake.top;
+            if (Snake.x < 0) {
+                Snake.x = canvas.width - distance;
+            }
+            else if (Snake.x >= canvas.width) {
+                Snake.x = 0;
+            }
+            if (Snake.y < 0) {
+                Snake.y = canvas.height - distance;
+            }
+            else if (Snake.y >= canvas.height) {
+                Snake.y = 0;
+            }
+            Snake.cells.unshift({ x: Snake.x, y: Snake.y });
+            if (Snake.cells.length > Snake.minCells) {
+                Snake.cells.pop();
+            }
+            context.fillStyle = 'red';
+            context.fillRect(Apple.x, Apple.y, distance - 1, distance - 1);
+            context.fillStyle = '#4169E1';
+            Snake.cells.forEach(function (cell, index) {
+                context.fillRect(cell.x, cell.y, distance - 1, distance - 1);
+                if (cell.x === Apple.x && cell.y === Apple.y) {
+                    Snake.minCells++;
+                    diem += 1;
+                    Apple.x = getRandomInt(0, 25) * distance;
+                    Apple.y = getRandomInt(0, 25) * distance;
+                }
+                document.getElementById("diem").innerHTML = diem;
+                for (var i = index + 1; i < Snake.cells.length; i++) {
+                    if (cell.x === Snake.cells[i].x && cell.y === Snake.cells[i].y) {
+                        if (diem > diemcao) {
+                            document.getElementById("diemcao").innerHTML = diem;
+                            diemcao = diem;
+                        }
+                        diem = 0;
+
+                        Snake.x = 160;
+                        Snake.y = 160;
+                        Snake.cells = [];
+                        Snake.minCells = 4;
+                        Snake.left = distance;
+                        Snake.top = 0;
+                        Apple.x = getRandomInt(0, 25) * distance;
+                        Apple.y = getRandomInt(0, 25) * distance;
+                    }
+                }
+            });
+        }
+        function changeColor() { }
+        // Tạo sự kiện bàn phím điều khiển rắn
+        document.addEventListener('keydown', function (key) {
+            if (key.which === 37 && Snake.left === 0) {
+                Snake.left = -distance;
+                Snake.top = 0;
+            }
+            else if (key.which === 38 && Snake.top === 0) {
+                Snake.top = -distance;
+                Snake.left = 0;
+            }
+            else if (key.which === 39 && Snake.left === 0) {
+                Snake.left = distance;
+                Snake.top = 0;
+            }
+            else if (key.which === 40 && Snake.top === 0) {
+                Snake.top = distance;
+                Snake.left = 0;
+            }
+        });
+        loop();
+    </script>
+</body>
+
+</html>
